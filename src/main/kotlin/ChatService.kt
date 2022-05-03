@@ -29,6 +29,7 @@ class ChatService {
         return chat
     }
 
+
     fun addMessage(chatId: Int, addressee: String, text: String): Message {
         val chat = getChatById(chatId)
         val messageId = if (chat.messages.isNotEmpty() && chat.messages.last().messageId > 0) {
@@ -61,6 +62,7 @@ class ChatService {
             return true
         }
     }
+
 
     fun deleteMessage(chatId: Int, messageId: Int): Boolean {
         val chat = chats.find {
