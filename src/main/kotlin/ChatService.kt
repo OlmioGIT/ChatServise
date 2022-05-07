@@ -90,23 +90,14 @@ class ChatService {
     }
 
     fun getMessages(chatId: Int, lastMessageId: Int, count: Int): List<Message> {
-        val chat = chats.find {
-            it.chatId == chatId
-        }
-            ?: throw ChatOrMessageNotFoundException("Чат с id = $chatId не найден")
-        chat.messages.find {
-            it.messageId == lastMessageId
-        }
-            ?: throw ChatOrMessageNotFoundException("Сообщение с id = $lastMessageId не найдено")
-        val latestMessages = chat.messages.takeLastWhile {
-            it.messageId > lastMessageId
-        }.take(count)
-        for (message in latestMessages) {
-            if (message.addressee.equals(logUserIdNow, true)) {
-                message.ifLook = true
-            }
-        }
-        return latestMessages
+        return chats.singleOrNull() { it.chatId == chatId }
+            .let { it?.messages ?: throw ChatOrMessageNotFoundException("Чат с id = $chatId не найден") }
+            .asSequence()
+            .drop(lastMessageId)
+            .take(count)
+            .ifEmpty { throw ChatOrMessageNotFoundException("Сообщение с id = $lastMessageId не найдено") }
+            .onEach { it.ifLook = true }
+            .toList()
     }
 
     fun getUnreadChatsCount(): List<Chat> {
